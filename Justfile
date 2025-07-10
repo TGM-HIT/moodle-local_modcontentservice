@@ -18,6 +18,14 @@ get-moodle:
 cp-config-php:
 	cp "{{MOODLE_DOCKER}}/config.docker-template.php" "{{MOODLE_ROOT}}/config.php"
 
+copy-plugin NAME:
+	cp -r "{{NAME}}" "{{MOODLE_ROOT}}/local/{{NAME}}"
+remove-plugin NAME:
+	rm -r "{{MOODLE_ROOT}}/local/{{NAME}}"
+
+copy-plugins: (copy-plugin "resourceservice")
+remove-plugins: (remove-plugin "resourceservice")
+
 compose *ARGS:
 	"{{MOODLE_DOCKER}}/bin/moodle-docker-compose" {{ARGS}}
 
