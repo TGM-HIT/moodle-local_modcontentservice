@@ -17,4 +17,10 @@ $functions = [
     // 'services' => [],
     // 'capabilities' => 'moodle/course:creategroups,moodle/course:managegroups',
   ],
+  'local_resourceservice_save_page_content' => [
+    'classname'   => 'local_resourceservice\external\save_page_content',
+    'description' => 'Returns a greeting.',
+    'type'        => 'write',
+    'ajax'        => true,
+  ],
 ];
