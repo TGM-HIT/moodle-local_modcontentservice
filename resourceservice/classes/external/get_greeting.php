@@ -11,7 +11,7 @@ class get_greeting extends \core_external\external_api {
    * Returns description of method parameters
    * @return external_function_parameters
    */
-  public static function execute_parameters() {
+  public static function execute_parameters(): external_function_parameters {
     return new external_function_parameters([
       'name' => new external_value(PARAM_TEXT, 'name of the user to greet'),
     ]);
@@ -23,10 +23,10 @@ class get_greeting extends \core_external\external_api {
 
   /**
    * Create groups
-   * @param array $groups array of group description arrays (with keys groupname and courseid)
-   * @return array of newly created groups
+   * @param string $groups array of group description arrays (with keys groupname and courseid)
+   * @return string of newly created groups
    */
-  public static function execute($name) {
+  public static function execute(string $name): string {
     // global $CFG, $DB;
     // require_once("$CFG->dirroot/group/lib.php");
 
