@@ -36,6 +36,8 @@ init: (compose "exec" "webserver" "php" "admin/cli/install_database.php"
 	"--agree-license" "--fullname='Docker moodle'" "--shortname='docker_moodle'"
 	"--summary='Docker moodle site'" "--adminpass='test'" "--adminemail='admin@example.com'")
 
+setup-webservice: (compose "exec" "webserver" "php" "local/resourceservice/cli/webservicesetup.php")
+
 up: (compose "up" "-d") wait-for-db
 
 down: (compose "down")

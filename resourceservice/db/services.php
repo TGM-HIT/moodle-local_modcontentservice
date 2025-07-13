@@ -24,3 +24,36 @@ $functions = [
     'ajax'        => true,
   ],
 ];
+
+$services = [
+  // The name of the service.
+  // This does not need to include the component name.
+  'resourceservice' => [
+    // A list of external functions available in this service.
+    'functions' => [
+      'local_resourceservice_get_greeting',
+      'local_resourceservice_save_page_content',
+    ],
+
+    // If set, the external service user will need this capability to access
+    // any function of this service.
+    // For example: 'local_groupmanager/integration:access'
+    // 'requiredcapability' => 'local_groupmanager/integration:access',
+
+    // If enabled, the Moodle administrator must link a user to this service from the Web UI.
+    'restrictedusers' => 0,
+
+    // Whether the service is enabled by default or not.
+    // 'enabled' => 0,
+
+    // This field os optional, but requried if the `restrictedusers` value is
+    // set, so as to allow configuration via the Web UI.
+    'shortname' =>  'resourceservice',
+
+    // Whether to allow file downloads.
+    'downloadfiles' => 1,
+
+    // Whether to allow file uploads.
+    'uploadfiles'  => 1,
+  ],
+];
