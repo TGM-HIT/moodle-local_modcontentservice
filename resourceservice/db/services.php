@@ -19,7 +19,7 @@ $functions = [
   ],
   'local_resourceservice_save_page_content' => [
     'classname'   => 'local_resourceservice\external\save_page_content',
-    'description' => 'Returns a greeting.',
+    'description' => 'Replaces the intro and content of a specified page',
     'type'        => 'write',
     'ajax'        => true,
   ],

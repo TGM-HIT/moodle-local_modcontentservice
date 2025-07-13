@@ -1,2 +1,2 @@
 <?php
-$string['pluginname'] = 'Edit content plugin';
+$string['pluginname'] = 'Resource service plugin';

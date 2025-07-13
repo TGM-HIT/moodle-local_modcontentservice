@@ -2,11 +2,9 @@
 namespace local_resourceservice\external;
 
 use core_external\external_function_parameters;
-// use core_external\external_multiple_structure;
-// use core_external\external_single_structure;
 use core_external\external_value;
 
-require_once($CFG->dirroot . '/course/modlib.php');
+require_once($CFG->dirroot.'/course/modlib.php');
 
 class save_page_content extends \core_external\external_api {
   /**
@@ -20,7 +18,7 @@ class save_page_content extends \core_external\external_api {
   }
 
   public static function execute_returns() {
-    return new external_value(PARAM_RAW, 'the result');
+    return new external_value(PARAM_TEXT, 'the result');
   }
 
   /**
@@ -29,11 +27,7 @@ class save_page_content extends \core_external\external_api {
    * @return string of newly created groups
    */
   public static function execute(int $cmid): string {
-    global $CFG, $DB;
-    require_once("$CFG->libdir/resourcelib.php");
-
-    $params = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid]);
-    $cmid = $params["cmid"];
+    ['cmid' => $cmid] = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid]);
 
     $moduleinfo = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
 
