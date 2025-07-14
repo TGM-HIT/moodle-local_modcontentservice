@@ -14,6 +14,7 @@ class save_page_content extends \core_external\external_api {
   public static function execute_parameters(): external_function_parameters {
     return new external_function_parameters([
       'cmid' => new external_value(PARAM_INT, 'course module ID of the page to update'),
+      'body' => new external_value(PARAM_RAW, 'the new body content of the page'),
     ]);
   }
 
@@ -26,19 +27,19 @@ class save_page_content extends \core_external\external_api {
    * @param string $groups array of group description arrays (with keys groupname and courseid)
    * @return string of newly created groups
    */
-  public static function execute(int $cmid): string {
-    ['cmid' => $cmid] = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid]);
+  public static function execute(int $cmid, string $body): string {
+    ['cmid' => $cmid, 'body' => $body] = self::validate_parameters(self::execute_parameters(), ['cmid' => $cmid, 'body' => $body]);
 
     $moduleinfo = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
 
     $moduleinfo->coursemodule = $cmid;
     $moduleinfo->introeditor = [
-      "text" => "<p>new a</p>",
+      "text" => "",
       "format" => FORMAT_HTML,
       "itemid" => IGNORE_FILE_MERGE,
     ];
     $moduleinfo->page = [
-      "text" => "<p>new b</p>",
+      "text" => $body,
       "format" => FORMAT_HTML,
       "itemid" => null,
     ];
