@@ -27,6 +27,8 @@ define('CLI_SCRIPT', true);
 
 require(__DIR__.'/../../../config.php');
 require_once($CFG->libdir.'/clilib.php');
+require_once($CFG->dirroot.'/user/lib.php');
+require_once($CFG->dirroot.'/webservice/lib.php');
 
 // Get the cli options.
 list($options, $unrecognized) = cli_get_params([
@@ -38,11 +40,7 @@ list($options, $unrecognized) = cli_get_params([
 
 $help =
 "
-Help message for local_modcontentservice cli script.
-
-Please include a list of options and associated actions.
-
-Please include an example of usage.
+For testing purposes. Installs the service, adds an example web service user, then prints the token.
 ";
 
 if ($unrecognized) {
@@ -54,3 +52,40 @@ if ($options['help']) {
     cli_writeln($help);
     die();
 }
+
+$systemcontext = context_system::instance();
+
+// Enable web services and REST protocol.
+set_config('enablewebservices', true);
+set_config('webserviceprotocols', 'rest');
+
+// Create a web service user.
+$webserviceuserid = user_create_user([
+  'username' => 'modcontentservice-user',
+  'email' => 'modcontentservice@example.com',
+  'firstname' => 'Mod Content Service',
+  'lastname' => 'User',
+  'mnethostid' => $CFG->mnet_localhost_id,
+  'confirmed' => 1,
+]);
+
+// Create a web service role.
+$wsroleid = create_role('WS Role for Mod Content Service', 'ws-modcontentservice-role', '');
+set_role_contextlevels($wsroleid, [CONTEXT_SYSTEM]);
+assign_capability('webservice/rest:use', CAP_ALLOW, $wsroleid, $systemcontext->id, true);
+
+// Give the user the role.
+role_assign($wsroleid, $webserviceuserid, $systemcontext->id);
+
+// Enable the externalquiz webservice.
+$webservicemanager = new webservice();
+$service = $webservicemanager->get_external_service_by_shortname('modcontentservice');
+$service->enabled = true;
+$webservicemanager->update_external_service($service);
+
+// Authorise the user to use the service.
+// $webservicemanager->add_ws_authorised_user((object) ['externalserviceid' => $service->id, 'userid' => $webserviceuserid]);
+
+// Create a token for the user.
+$token = \core_external\util::generate_token(EXTERNAL_TOKEN_PERMANENT, $service, $webserviceuserid, $systemcontext);
+print($token);

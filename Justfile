@@ -1,5 +1,5 @@
-MOODLE_DOCKER := "../moodle-docker"
-MOODLE_ROOT := "../moodle"
+MOODLE_DOCKER := "../../../moodle-docker"
+MOODLE_ROOT := "../../../moodle"
 # MOODLE_VERSION := "v4.5.5"
 MOODLE_VERSION := "v5.0.1"
 
@@ -19,12 +19,12 @@ cp-config-php:
 	cp "{{MOODLE_DOCKER}}/config.docker-template.php" "{{MOODLE_ROOT}}/config.php"
 
 copy-plugin NAME:
-	cp -r "{{NAME}}" "{{MOODLE_ROOT}}/local/{{NAME}}"
+	cp -r . "{{MOODLE_ROOT}}/local/{{NAME}}"
 remove-plugin NAME:
 	rm -r "{{MOODLE_ROOT}}/local/{{NAME}}"
 
-copy-plugins: (copy-plugin "resourceservice")
-remove-plugins: (remove-plugin "resourceservice")
+copy-plugins: (copy-plugin "modcontentservice")
+remove-plugins: (remove-plugin "modcontentservice")
 
 compose *ARGS:
 	"{{MOODLE_DOCKER}}/bin/moodle-docker-compose" {{ARGS}}
@@ -36,7 +36,7 @@ init: (compose "exec" "webserver" "php" "admin/cli/install_database.php"
 	"--agree-license" "--fullname='Docker moodle'" "--shortname='docker_moodle'"
 	"--summary='Docker moodle site'" "--adminpass='test'" "--adminemail='admin@example.com'")
 
-setup-webservice: (compose "exec" "webserver" "php" "local/resourceservice/cli/webservicesetup.php")
+setup-webservice: (compose "exec" "webserver" "php" "local/modcontentservice/cli/webservicesetup.php")
 
 up: (compose "up" "-d") wait-for-db
 

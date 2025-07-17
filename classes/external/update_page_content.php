@@ -19,13 +19,12 @@ namespace local_modcontentservice\external;
 use external_api;
 use external_description;
 use external_function_parameters;
-use external_multiple_structure;
-use external_single_structure;
 use external_value;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/externallib.php');
+require_once($CFG->dirroot . '/course/modlib.php');
 
 /**
  * External function 'local_modcontentservice_update_page_content' implementation.
@@ -68,15 +67,23 @@ class update_page_content extends external_api {
             'body' => $body,
         ]);
 
-        // Set up and validate appropriate context.
-        // TO-DO Check and eventually replace system context with a different one as needed.
-        $context = \context_system::instance();
-        self::validate_context($context);
+        $moduleinfo = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
 
-        // Check capabilities.
-        require_capability('local/modcontentservice:example', $context);
+        $moduleinfo->coursemodule = $cmid;
+        $moduleinfo->introeditor = [
+        "text" => "",
+        "format" => FORMAT_HTML,
+        "itemid" => IGNORE_FILE_MERGE,
+        ];
+        $moduleinfo->page = [
+        "text" => $body,
+        "format" => FORMAT_HTML,
+        "itemid" => null,
+        ];
 
-        // TO-DO Implement the function and return the expected value.
+        update_module($moduleinfo);
+
+        return "ok";
     }
 
     /**
