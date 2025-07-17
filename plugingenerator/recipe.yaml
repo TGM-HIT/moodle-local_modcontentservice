@@ -1,0 +1,105 @@
+## This is an example recipe file that you can use as a template for your own plugins.
+## See the list of all files it would generate:
+##
+##     php generate.php example.yaml --list-files
+##
+## View a particular file contents without actually writing it to the disk:
+##
+##     php generate.php example.yaml --file=version.php
+##
+## To see the full list of options, run:
+##
+##     php generate.php --help
+##
+---
+## Frankenstyle component name.
+component: local_modcontentservice
+
+## Human readable name of the plugin.
+name: Module Content Service
+
+## Human readable release number.
+release: "0.1.0"
+
+## Plugin version number, e.g. 2016062100. Will be set to current date if left empty.
+#version: 2016121200
+
+## Required Moodle version, e.g. 2015051100 or "2.9".
+requires: "4.0"
+
+## Plugin maturity level. Possible options are MATURIY_ALPHA, MATURITY_BETA,
+## MATURITY_RC or MATURIY_STABLE.
+maturity: MATURITY_ALPHA
+
+## Copyright holder(s) of the generated files and classes.
+copyright: 2025 Clemens Koza <ckoza@tgm.ac.at>
+
+## Features flags can control generation of optional files/code fragments.
+features:
+  readme: true
+  license: true
+  settings: false
+  ## Should db/upgrade.php file be generated? Upgrade steps are defined in this file.
+  upgrade: false
+  ## Should db/upgradelib.php be also generated? Implies upgrade feature enabled.
+  upgradelib: false
+  install: false
+  uninstall: false
+
+  ## Privacy API implementation
+privacy:
+  haspersonaldata: false
+  uselegacypolyfill: false
+  meta:
+    subsystems:
+      - files
+      - portfolio:
+        - firstname
+        - lastname
+
+## PHPUnit test classes.
+phpunit_tests:
+  ## The class will be defined in the file tests/firstclass_test.php
+  ## The full class name will be plugintype_pluginname_firstclass_testcase.
+  - classname: basictests
+
+## If the plugin depends on other plugins, declare the dependencies.
+dependencies:
+  - plugin: mod_page
+    version: ANY_VERSION
+
+cli_scripts:
+  - filename: webservicesetup
+
+## External functions provided by the plugin.
+external:
+  - name: update_page_content
+    desc: Replaces the intro and content of a specified page
+    type: write
+    ajax: 'true'
+    loginrequired: 'true'
+    readonlysession: 'false'
+
+    parameters:
+      - name: cmid
+        type: PARAM_INT
+        desc: course module ID of the page to update
+      - name: body
+        type: PARAM_RAW
+        desc: the new body content of the page
+
+    returns:
+      - type: PARAM_TEXT
+        desc: the result
+
+## Pre-built web services provided by the plugin.
+services:
+  - name: Mod Content Service
+    shortname: modcontentservice
+    functions:
+      - local_modcontentservice_update_page_content
+    # requiredcapability: local/wsexample:managethings
+    # enabled: 'true'
+    restrictedusers: 'false'
+    downloadfiles: 'true'
+    uploadfiles: 'true'
