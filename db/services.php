@@ -26,11 +26,19 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
-
     'local_modcontentservice_update_page_content' => [
         'classname' => '\local_modcontentservice\external\update_page_content',
         'methodname' => 'execute',
         'description' => 'Replaces the intro and content of a specified page',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
+    'local_modcontentservice_update_resource_content' => [
+        'classname' => '\local_modcontentservice\external\update_resource_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the intro and file of a specified resource',
         'type' => 'write',
         'ajax' => true,
         'loginrequired' => true,
@@ -42,6 +50,7 @@ $services = [
     'Mod Content Service' => [
         'functions' => [
             'local_modcontentservice_update_page_content',
+            'local_modcontentservice_update_resource_content',
         ],
         'shortname' => 'modcontentservice',
         'restrictedusers' => false,
