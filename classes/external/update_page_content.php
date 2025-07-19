@@ -20,11 +20,14 @@ use external_api;
 use external_description;
 use external_function_parameters;
 use external_value;
+use external_single_structure;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/externallib.php');
+require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
+require_once($CFG->dirroot . '/mod/page/locallib.php');
 
 /**
  * External function 'local_modcontentservice_update_page_content' implementation.
@@ -45,7 +48,16 @@ class update_page_content extends external_api {
 
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the page to update'),
-            'body' => new external_value(PARAM_RAW, 'the new body content of the page'),
+            'intro' => new external_single_structure([
+                'text' => new external_value(PARAM_RAW, 'the new intro content of the page'),
+                'format' => new external_value(PARAM_INT, 'the format of the intro content', VALUE_DEFAULT, FORMAT_HTML),
+                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
+            ], 'the new intro content of the page'),
+            'page' => new external_single_structure([
+                'text' => new external_value(PARAM_RAW, 'the new body content of the page'),
+                'format' => new external_value(PARAM_INT, 'the format of the body content', VALUE_DEFAULT, FORMAT_HTML),
+                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
+            ], 'the new body content of the page'),
         ]);
     }
 
@@ -56,30 +68,23 @@ class update_page_content extends external_api {
      * @param string $body
      * @return mixed TO-DO document
      */
-    public static function execute(int $cmid, string $body) {
-
+    public static function execute(int $cmid, array $intro, array $page) {
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
-            'body' => $body,
+            'intro' => $intro,
+            'page' => $page,
         ] = self::validate_parameters(self::execute_parameters(), [
             'cmid' => $cmid,
-            'body' => $body,
+            'intro' => $intro,
+            'page' => $page,
         ]);
 
         $moduleinfo = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
 
         $moduleinfo->coursemodule = $cmid;
-        $moduleinfo->introeditor = [
-        "text" => "",
-        "format" => FORMAT_HTML,
-        "itemid" => IGNORE_FILE_MERGE,
-        ];
-        $moduleinfo->page = [
-        "text" => $body,
-        "format" => FORMAT_HTML,
-        "itemid" => null,
-        ];
+        $moduleinfo->introeditor = $intro;
+        $moduleinfo->page = $page;
 
         update_module($moduleinfo);
 
