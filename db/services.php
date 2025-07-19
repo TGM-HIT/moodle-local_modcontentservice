@@ -44,6 +44,15 @@ $functions = [
         'loginrequired' => true,
         'readonlysession' => false,
     ],
+    'local_modcontentservice_update_folder_content' => [
+        'classname' => '\local_modcontentservice\external\update_folder_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the intro and files of a specified folder',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
 ];
 
 $services = [
@@ -51,6 +60,7 @@ $services = [
         'functions' => [
             'local_modcontentservice_update_page_content',
             'local_modcontentservice_update_resource_content',
+            'local_modcontentservice_update_folder_content',
         ],
         'shortname' => 'modcontentservice',
         'restrictedusers' => false,
