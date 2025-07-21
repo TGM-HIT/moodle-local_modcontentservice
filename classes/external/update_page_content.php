@@ -28,6 +28,20 @@ require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot . '/mod/page/locallib.php');
+require_once($CFG->dirroot . '/mod/page/mod_form.php');
+
+function preprocess(object $data) {
+    // make a class that lets us access the `data_preprocessing` method without touching code paths
+    // specific to handling HTML forms from the session of a logged in user
+    class stub_form extends \mod_page_mod_form {
+        public function __construct() {}
+    }
+
+    $data = (array) $data;
+    (new stub_form())->data_preprocessing($data);
+    $data = (object) $data;
+    return $data;
+}
 
 /**
  * External function 'local_modcontentservice_update_page_content' implementation.
@@ -38,14 +52,12 @@ require_once($CFG->dirroot . '/mod/page/locallib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_page_content extends external_api {
-
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
-
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the page to update'),
             'intro' => new external_single_structure([
@@ -69,6 +81,8 @@ class update_page_content extends external_api {
      * @return mixed TO-DO document
      */
     public static function execute(int $cmid, array $intro, array $page) {
+        global $DB;
+
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
@@ -80,13 +94,17 @@ class update_page_content extends external_api {
             'page' => $page,
         ]);
 
-        $moduleinfo = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+        [$cm, $context, $module, $data, $cw] = get_moduleinfo_data($cm, $course);
 
-        $moduleinfo->coursemodule = $cmid;
-        $moduleinfo->introeditor = $intro;
-        $moduleinfo->page = $page;
+        $data = preprocess($data);
 
-        update_module($moduleinfo);
+        $data->coursemodule = $cmid;
+        $data->introeditor = $intro;
+        $data->page = $page;
+
+        update_module($data);
 
         return "ok";
     }
@@ -97,7 +115,6 @@ class update_page_content extends external_api {
      * @return external_description
      */
     public static function execute_returns(): external_description {
-
         return new external_value(PARAM_TEXT, 'the result');
     }
 }

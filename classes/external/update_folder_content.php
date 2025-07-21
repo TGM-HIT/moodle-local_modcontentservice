@@ -27,7 +27,21 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
-// require_once($CFG->dirroot . '/mod/folder/locallib.php');
+require_once($CFG->dirroot . '/mod/folder/locallib.php');
+require_once($CFG->dirroot . '/mod/folder/mod_form.php');
+
+function preprocess(object $data) {
+    // make a class that lets us access the `data_preprocessing` method without touching code paths
+    // specific to handling HTML forms from the session of a logged in user
+    class stub_form extends \mod_folder_mod_form {
+        public function __construct() {}
+    }
+
+    $data = (array) $data;
+    (new stub_form())->data_preprocessing($data);
+    $data = (object) $data;
+    return $data;
+}
 
 /**
  * External function 'local_modcontentservice_update_folder_content' implementation.
@@ -65,6 +79,8 @@ class update_folder_content extends external_api {
      * @return mixed TO-DO document
      */
     public static function execute(int $cmid, array $intro, int $files) {
+        global $DB;
+
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
@@ -76,11 +92,15 @@ class update_folder_content extends external_api {
             'files' => $files,
         ]);
 
-        $moduleinfo = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
+        $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
+        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
+        [$cm, $context, $module, $data, $cw] = get_moduleinfo_data($cm, $course);
 
-        $moduleinfo->coursemodule = $cmid;
-        $moduleinfo->introeditor = $intro;
-        $moduleinfo->files = $files;
+        $data = preprocess($data);
+
+        $data->coursemodule = $cmid;
+        $data->introeditor = $intro;
+        $data->files = $files;
 
         // TODO the folder module checks the CSRF token (called sesskey, see
         // https://moodledev.io/general/development/policies/security/crosssite-request-forgery),
@@ -90,7 +110,7 @@ class update_folder_content extends external_api {
         global $USER;
         $USER->ignoresesskey = true;
 
-        update_module($moduleinfo);
+        update_module($data);
 
         return "ok";
     }
