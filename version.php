@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_modcontentservice';
 $plugin->release = '0.1.0';
-$plugin->version = 2025071700;
+$plugin->version = 2025072100;
 $plugin->requires = 2022041900;
 $plugin->maturity = MATURITY_ALPHA;
 $plugin->dependencies = [

@@ -53,6 +53,15 @@ $functions = [
         'loginrequired' => true,
         'readonlysession' => false,
     ],
+    'local_modcontentservice_update_assign_content' => [
+        'classname' => '\local_modcontentservice\external\update_assign_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the description, instructions and attachments of a specified assignment',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
 ];
 
 $services = [
@@ -61,6 +70,7 @@ $services = [
             'local_modcontentservice_update_page_content',
             'local_modcontentservice_update_resource_content',
             'local_modcontentservice_update_folder_content',
+            'local_modcontentservice_update_assign_content',
         ],
         'shortname' => 'modcontentservice',
         'restrictedusers' => false,
