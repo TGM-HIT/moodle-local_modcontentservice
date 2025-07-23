@@ -22,6 +22,7 @@ use external_single_structure;
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->libdir . '/externallib.php');
+require_once($CFG->libdir . '/filelib.php');
 
 /**
  * Common superclass for this plugin's external functions.

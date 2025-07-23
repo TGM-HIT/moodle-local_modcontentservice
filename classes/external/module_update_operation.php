@@ -21,7 +21,6 @@ use core\context\module as context_module;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 
 /**

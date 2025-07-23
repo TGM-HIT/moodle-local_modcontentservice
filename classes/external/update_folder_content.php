@@ -22,10 +22,7 @@ use external_value;
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->libdir . '/externallib.php');
-require_once($CFG->libdir . '/filelib.php');
-require_once($CFG->dirroot . '/course/modlib.php');
-require_once($CFG->dirroot . '/mod/folder/locallib.php');
+// require_once($CFG->dirroot . '/mod/folder/locallib.php');
 
 /**
  * External function 'local_modcontentservice_update_folder_content' implementation.
