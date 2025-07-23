@@ -45,7 +45,6 @@ class module_update_operation {
 
         $this->cm = get_coursemodule_from_id($this->module_name, $cmid, 0, false, MUST_EXIST);
         $this->context = context_module::instance($cmid);
-        require_capability('moodle/course:manageactivities', $this->context);
 
         $this->data = new stdClass();
         $this->data->id = $this->cm->instance;

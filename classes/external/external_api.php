@@ -52,6 +52,9 @@ class external_api extends \external_api {
     }
 
     public static function update_operation(int $cmid) {
-        return new module_update_operation(static::$module_name, $cmid);
+        $op = new module_update_operation(static::$module_name, $cmid);
+        self::validate_context($op->get_context());
+        require_capability('moodle/course:manageactivities', $op->get_context());
+        return $op;
     }
 }
