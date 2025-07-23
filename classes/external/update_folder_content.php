@@ -16,6 +16,7 @@
 
 namespace local_modcontentservice\external;
 
+use core\context\module as context_module;
 use external_api;
 use external_description;
 use external_function_parameters;
@@ -28,20 +29,6 @@ require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot . '/mod/folder/locallib.php');
-require_once($CFG->dirroot . '/mod/folder/mod_form.php');
-
-function preprocess(object $data) {
-    // make a class that lets us access the `data_preprocessing` method without touching code paths
-    // specific to handling HTML forms from the session of a logged in user
-    class stub_form extends \mod_folder_mod_form {
-        public function __construct() {}
-    }
-
-    $data = (array) $data;
-    (new stub_form())->data_preprocessing($data);
-    $data = (object) $data;
-    return $data;
-}
 
 /**
  * External function 'local_modcontentservice_update_folder_content' implementation.
@@ -52,14 +39,12 @@ function preprocess(object $data) {
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_folder_content extends external_api {
-
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
-
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the folder to update'),
             'intro' => new external_single_structure([
@@ -93,24 +78,19 @@ class update_folder_content extends external_api {
         ]);
 
         $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
-        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
-        [$cm, $context, $module, $data, $cw] = get_moduleinfo_data($cm, $course);
+        $context = context_module::instance($cmid);
+        require_capability('moodle/course:manageactivities', $context);
 
-        $data = preprocess($data);
+        $data = new \stdClass();
+        $data->id = $cm->instance;
+        $data->timemodified = time();
+        $data->revision = $DB->get_record('folder', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
+        $data->intro = $intro['text'];
+        $data->introformat = $intro['format'];
 
-        $data->coursemodule = $cmid;
-        $data->introeditor = $intro;
-        $data->files = $files;
-
-        // TODO the folder module checks the CSRF token (called sesskey, see
-        // https://moodledev.io/general/development/policies/security/crosssite-request-forgery),
-        // which lets the update fail unless we tell Moodle to ignore it.
-        // since this is a webservice authenticated by token, we don't have a session.
-        // this setting is not persisted, but it's still hacky
-        global $USER;
-        $USER->ignoresesskey = true;
-
-        update_module($data);
+        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_folder', 'intro', 0, ['subdirs' => true]);
+        file_save_draft_area_files($files, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
+        $DB->update_record('folder', $data);
 
         return "ok";
     }
@@ -121,7 +101,6 @@ class update_folder_content extends external_api {
      * @return external_description
      */
     public static function execute_returns(): external_description {
-
         return new external_value(PARAM_TEXT, 'the result');
     }
 }

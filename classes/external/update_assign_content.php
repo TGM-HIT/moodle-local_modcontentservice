@@ -24,24 +24,11 @@ use external_single_structure;
 
 defined('MOODLE_INTERNAL') || die();
 
+use core\context\module as context_module;
 require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once($CFG->dirroot . '/mod/assign/mod_form.php');
-
-function preprocess(object $data) {
-    // make a class that lets us access the `data_preprocessing` method without touching code paths
-    // specific to handling HTML forms from the session of a logged in user
-    class stub_form extends \mod_assign_mod_form {
-        public function __construct() {}
-    }
-
-    $data = (array) $data;
-    (new stub_form())->data_preprocessing($data);
-    $data = (object) $data;
-    return $data;
-}
 
 /**
  * External function 'local_modcontentservice_update_assign_content' implementation.
@@ -52,14 +39,12 @@ function preprocess(object $data) {
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_assign_content extends external_api {
-
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
-
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the assignment to update'),
             'intro' => new external_single_structure([
@@ -100,19 +85,21 @@ class update_assign_content extends external_api {
         ]);
 
         $cm = get_coursemodule_from_id('assign', $cmid, 0, false, MUST_EXIST);
-        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
-        [$cm, $context, $module, $data, $cw] = get_moduleinfo_data($cm, $course);
+        $context = context_module::instance($cmid);
+        require_capability('moodle/course:manageactivities', $context);
 
-        $data = preprocess($data);
+        $data = new \stdClass();
+        $data->id = $cm->instance;
+        $data->timemodified = time();
+        // $data->revision = $DB->get_record('assign', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
+        $data->intro = $intro['text'];
+        $data->introformat = $intro['format'];
+        $data->activity = $activity['text'];
+        $data->activityformat = $activity['format'];
 
-        $data->coursemodule = $cmid;
-        $data->introeditor = $intro;
-        $data->activityeditor = $activity;
-        if ($attachments !== 0) {
-            $data->introattachments = $attachments;
-        }
-
-        update_module($data);
+        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_assign', 'intro', 0, ['subdirs' => true]);
+        file_save_draft_area_files($activity['itemid'], $context->id, 'mod_assign', ASSIGN_ACTIVITYATTACHMENT_FILEAREA, 0, ['subdirs' => true]);
+        $DB->update_record('assign', $data);
 
         return "ok";
     }
@@ -123,7 +110,6 @@ class update_assign_content extends external_api {
      * @return external_description
      */
     public static function execute_returns(): external_description {
-
         return new external_value(PARAM_TEXT, 'the result');
     }
 }

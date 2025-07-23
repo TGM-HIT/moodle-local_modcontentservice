@@ -16,6 +16,7 @@
 
 namespace local_modcontentservice\external;
 
+use core\context\module as context_module;
 use external_api;
 use external_description;
 use external_function_parameters;
@@ -28,20 +29,6 @@ require_once($CFG->libdir . '/externallib.php');
 require_once($CFG->libdir . '/filelib.php');
 require_once($CFG->dirroot . '/course/modlib.php');
 require_once($CFG->dirroot . '/mod/resource/locallib.php');
-require_once($CFG->dirroot . '/mod/resource/mod_form.php');
-
-function preprocess(object $data) {
-    // make a class that lets us access the `data_preprocessing` method without touching code paths
-    // specific to handling HTML forms from the session of a logged in user
-    class stub_form extends \mod_resource_mod_form {
-        public function __construct() {}
-    }
-
-    $data = (array) $data;
-    (new stub_form())->data_preprocessing($data);
-    $data = (object) $data;
-    return $data;
-}
 
 /**
  * External function 'local_modcontentservice_update_resource_content' implementation.
@@ -91,16 +78,23 @@ class update_resource_content extends external_api {
         ]);
 
         $cm = get_coursemodule_from_id('resource', $cmid, 0, false, MUST_EXIST);
-        $course = $DB->get_record('course', ['id' => $cm->course], '*', MUST_EXIST);
-        [$cm, $context, $module, $data, $cw] = get_moduleinfo_data($cm, $course);
+        $context = context_module::instance($cmid);
+        require_capability('moodle/course:manageactivities', $context);
 
-        $data = preprocess($data);
+        $data = new \stdClass();
+        $data->id = $cm->instance;
+        $data->timemodified = time();
+        $data->revision = $DB->get_record('resource', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
+        $data->intro = $intro['text'];
+        $data->introformat = $intro['format'];
 
-        $data->coursemodule = $cmid;
-        $data->introeditor = $intro;
-        $data->files = $files;
+        $mainfile = new \stdClass();
+        $mainfile->coursemodule = $cmid;
+        $mainfile->files = $files;
 
-        update_module($data);
+        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_resource', 'intro', 0, ['subdirs' => true]);
+        resource_set_mainfile($mainfile);
+        $DB->update_record('resource', $data);
 
         return "ok";
     }
