@@ -83,6 +83,7 @@ class update_assign_content extends external_api {
 
         $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
         $op->save_files($activity['itemid'], ASSIGN_ACTIVITYATTACHMENT_FILEAREA, 0, ['subdirs' => true]);
+        $op->save_files($attachments, ASSIGN_INTROATTACHMENT_FILEAREA, 0);
         $op->update_record();
 
         return "ok";
