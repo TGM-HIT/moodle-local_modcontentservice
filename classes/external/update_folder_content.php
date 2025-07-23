@@ -16,12 +16,9 @@
 
 namespace local_modcontentservice\external;
 
-use core\context\module as context_module;
-use external_api;
 use external_description;
 use external_function_parameters;
 use external_value;
-use external_single_structure;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,6 +36,8 @@ require_once($CFG->dirroot . '/mod/folder/locallib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_folder_content extends external_api {
+    protected static string $module_name = "folder";
+
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
@@ -47,11 +46,7 @@ class update_folder_content extends external_api {
     public static function execute_parameters(): external_function_parameters {
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the folder to update'),
-            'intro' => new external_single_structure([
-                'text' => new external_value(PARAM_RAW, 'the new intro content of the folder'),
-                'format' => new external_value(PARAM_INT, 'the format of the intro content', VALUE_DEFAULT, FORMAT_HTML),
-                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
-            ], 'the new intro content of the folder'),
+            'intro' => self::editor_structure('intro'),
             'files' => new external_value(PARAM_INT, 'the item ID for file storage'),
         ]);
     }
@@ -64,8 +59,6 @@ class update_folder_content extends external_api {
      * @return mixed TO-DO document
      */
     public static function execute(int $cmid, array $intro, int $files) {
-        global $DB;
-
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
@@ -77,20 +70,16 @@ class update_folder_content extends external_api {
             'files' => $files,
         ]);
 
-        $cm = get_coursemodule_from_id('folder', $cmid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cmid);
-        require_capability('moodle/course:manageactivities', $context);
+        $op = self::update_operation($cmid);
 
-        $data = new \stdClass();
-        $data->id = $cm->instance;
-        $data->timemodified = time();
-        $data->revision = $DB->get_record('folder', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
-        $data->intro = $intro['text'];
-        $data->introformat = $intro['format'];
+        $op->set_time_modified();
+        $op->set_revision();
+        $op->data->intro = $intro['text'];
+        $op->data->introformat = $intro['format'];
 
-        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_folder', 'intro', 0, ['subdirs' => true]);
-        file_save_draft_area_files($files, $context->id, 'mod_folder', 'content', 0, ['subdirs' => true]);
-        $DB->update_record('folder', $data);
+        $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
+        $op->save_files($files, 'content', 0, ['subdirs' => true]);
+        $op->update_record();
 
         return "ok";
     }

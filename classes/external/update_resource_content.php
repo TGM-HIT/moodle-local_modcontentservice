@@ -16,12 +16,9 @@
 
 namespace local_modcontentservice\external;
 
-use core\context\module as context_module;
-use external_api;
 use external_description;
 use external_function_parameters;
 use external_value;
-use external_single_structure;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,19 +36,19 @@ require_once($CFG->dirroot . '/mod/resource/locallib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_resource_content extends external_api {
+    protected static string $module_name = "resource";
+
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
+        global $META;
+
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the resource to update'),
-            'intro' => new external_single_structure([
-                'text' => new external_value(PARAM_RAW, 'the new intro content of the resource'),
-                'format' => new external_value(PARAM_INT, 'the format of the intro content', VALUE_DEFAULT, FORMAT_HTML),
-                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
-            ], 'the new intro content of the resource'),
+            'intro' => self::editor_structure('intro'),
             'files' => new external_value(PARAM_INT, 'the item ID for file storage'),
         ]);
     }
@@ -64,8 +61,6 @@ class update_resource_content extends external_api {
      * @return mixed TO-DO document
      */
     public static function execute(int $cmid, array $intro, int $files) {
-        global $DB;
-
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
@@ -77,24 +72,20 @@ class update_resource_content extends external_api {
             'files' => $files,
         ]);
 
-        $cm = get_coursemodule_from_id('resource', $cmid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cmid);
-        require_capability('moodle/course:manageactivities', $context);
+        $op = self::update_operation($cmid);
 
-        $data = new \stdClass();
-        $data->id = $cm->instance;
-        $data->timemodified = time();
-        $data->revision = $DB->get_record('resource', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
-        $data->intro = $intro['text'];
-        $data->introformat = $intro['format'];
+        $op->set_time_modified();
+        $op->set_revision();
+        $op->data->intro = $intro['text'];
+        $op->data->introformat = $intro['format'];
 
         $mainfile = new \stdClass();
         $mainfile->coursemodule = $cmid;
         $mainfile->files = $files;
 
-        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_resource', 'intro', 0, ['subdirs' => true]);
+        $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
         resource_set_mainfile($mainfile);
-        $DB->update_record('resource', $data);
+        $op->update_record();
 
         return "ok";
     }

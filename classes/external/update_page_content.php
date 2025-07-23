@@ -16,12 +16,9 @@
 
 namespace local_modcontentservice\external;
 
-use core\context\module as context_module;
-use external_api;
 use external_description;
 use external_function_parameters;
 use external_value;
-use external_single_structure;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -39,24 +36,20 @@ require_once($CFG->dirroot . '/mod/page/locallib.php');
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_page_content extends external_api {
+    protected static string $module_name = "page";
+
     /**
      * Describes parameters of the {@see self::execute()} method.
      *
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
+        global $META;
+
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the page to update'),
-            'intro' => new external_single_structure([
-                'text' => new external_value(PARAM_RAW, 'the new intro content of the page'),
-                'format' => new external_value(PARAM_INT, 'the format of the intro content', VALUE_DEFAULT, FORMAT_HTML),
-                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
-            ], 'the new intro content of the page'),
-            'page' => new external_single_structure([
-                'text' => new external_value(PARAM_RAW, 'the new body content of the page'),
-                'format' => new external_value(PARAM_INT, 'the format of the body content', VALUE_DEFAULT, FORMAT_HTML),
-                'itemid' => new external_value(PARAM_INT, 'the item ID for file storage', VALUE_DEFAULT, IGNORE_FILE_MERGE),
-            ], 'the new body content of the page'),
+            'intro' => self::editor_structure('intro'),
+            'page' => self::editor_structure(file: 'body'),
         ]);
     }
 
@@ -68,8 +61,6 @@ class update_page_content extends external_api {
      * @return mixed TO-DO document
      */
     public static function execute(int $cmid, array $intro, array $page) {
-        global $DB;
-
         // Re-validate parameters in rare case this method was called directly.
         [
             'cmid' => $cmid,
@@ -81,22 +72,18 @@ class update_page_content extends external_api {
             'page' => $page,
         ]);
 
-        $cm = get_coursemodule_from_id('page', $cmid, 0, false, MUST_EXIST);
-        $context = context_module::instance($cmid);
-        require_capability('moodle/course:manageactivities', $context);
+        $op = self::update_operation($cmid);
 
-        $data = new \stdClass();
-        $data->id = $cm->instance;
-        $data->timemodified = time();
-        $data->revision = $DB->get_record('page', ['id' => $cm->instance], 'revision', MUST_EXIST)->revision + 1;
-        $data->intro = $intro['text'];
-        $data->introformat = $intro['format'];
-        $data->content = $page['text'];
-        $data->contentformat = $page['format'];
+        $op->set_time_modified();
+        $op->set_revision();
+        $op->data->intro = $intro['text'];
+        $op->data->introformat = $intro['format'];
+        $op->data->content = $page['text'];
+        $op->data->contentformat = $page['format'];
 
-        file_save_draft_area_files($intro['itemid'], $context->id, 'mod_page', 'intro', 0, ['subdirs' => true]);
-        file_save_draft_area_files($page['itemid'], $context->id, 'mod_page', 'content', 0, page_get_editor_options($context));
-        $DB->update_record('page', $data);
+        $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
+        $op->save_files($page['itemid'], 'content', 0, page_get_editor_options($op->get_context()));
+        $op->update_record();
 
         return "ok";
     }
