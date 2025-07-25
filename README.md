@@ -59,6 +59,44 @@ The `cmid` parameter is the ID of the activity. Since it's an assignment, the fu
 
 To embed an image in the assignment description, you would first upload e.g. `example.jpg` and specify `intro[itemid]=$ITEMID`. In the `intro[text]` content, you could then insert e.g. `<img src="@@PLUGINFILE@@/example.jpg" />`.
 
+#### Python example usage
+
+The same can for example be achieved using the [moodlepy](https://pypi.org/project/moodlepy/) library for Python. Due to a bug around form argument parsing, and because it supports file uploads natively, I recommend moodlepy as a git dependency on the [`improvements` branch of my fork](https://github.com/SillyFreak/moodlepy/tree/improvements), e.g. using
+
+```bash
+pip install git+https://github.com/SillyFreak/moodlepy@improvements
+```
+
+Assuming the same prerequisites as before, plus an existing example file, this script will achieve the same thing:
+
+```py
+from moodle import Moodle
+
+token = 'YOUR-WEBSERVICE-TOKEN'
+url = 'http://localhost:8000/webservice/rest/server.php'
+
+moodle = Moodle(url, token)
+
+itemid = moodle.upload(
+    ('example.txt', open('./example.txt', 'rb')),
+)[0].itemid
+
+result = moodle.post(
+    "local_modcontentservice_update_assign_content",
+    cmid=2,
+    intro=dict(
+        text="Hello",
+        format=1,
+    ),
+    activity=dict(
+        text="World",
+        format=1,
+    ),
+    attachments=itemid,
+)
+print(result)
+```
+
 ### Endpoint functions
 
 All endpoints live in the `local_modcontentservice` namespace and are named `update_..._content`, where `...` is one of the supported module names (`assign`, `folder`, `page`, `resource`). The exact parameters are as follows:
