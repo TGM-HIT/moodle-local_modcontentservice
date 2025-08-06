@@ -125,7 +125,7 @@ All endpoints live in the `local_modcontentservice` namespace and are named `upd
 File item IDs are obtained from calling Moodle's [file upload](https://moodledev.io/docs/5.0/apis/subsystems/external/files#file-upload) endpoint. All endpoints simply return `"ok"` on success; this will be improved. Rich text parameters are passed as multiple keys. For example, an `intro` rich text parameter contains
 
 - `intro[text]`: the actual text; `string`, required. To embed images, the URL must be written as `src="@@PLUGINFILE@@/<filename>"`. Moodle will replace `@@PLUGINFILE@@` with the correct URL prefix for the module being updated.
-- `intro[format]`: the text format; `int`, optional (default: 1 for HTML; other options: 0 for Moodle, 2, for plain text, 4 for Markdown)
+- `intro[format]`: the text format; `int`, optional (default: 1 for HTML; other options: 0 for Moodle, 2 for plain text, 4 for Markdown)
 - `intro[itemid]`: the file item ID for embedded images; `int`, optional (default: no files)
 
 ## Installing via uploaded ZIP file
