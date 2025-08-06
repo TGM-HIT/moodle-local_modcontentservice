@@ -11,7 +11,7 @@ In addition, updating a module through this plugin updates the revision number (
 
 The rich text fields (description, activity instructions, page content) support attached files (usually images). Naturally, the file fields do too. When referencing an uploaded file in rich text, the path must be referred to as `@@PLUGINFILE@@/<filename>`. Here, `@@PLUGINFILE@@` is a prefix that Moodle normally inserts when post-processing form input.
 
-### Example usage
+## Example usage
 
 This example requires the following prerequisites:
 
@@ -59,7 +59,7 @@ The `cmid` parameter is the ID of the activity. Since it's an assignment, the fu
 
 To embed an image in the assignment description, you would first upload e.g. `example.jpg` and specify `intro[itemid]=$ITEMID`. In the `intro[text]` content, you could then insert e.g. `<img src="@@PLUGINFILE@@/example.jpg" />`.
 
-#### Python example usage
+### Python example usage
 
 The same can for example be achieved using the [moodlepy](https://pypi.org/project/moodlepy/) library for Python. Due to a bug around form argument parsing, and because it supports file uploads natively, I recommend moodlepy as a git dependency on the [`improvements` branch of my fork](https://github.com/SillyFreak/moodlepy/tree/improvements), e.g. using
 
@@ -97,7 +97,11 @@ result = moodle.post(
 print(result)
 ```
 
-### Endpoint functions
+### Python CLI example usage
+
+You can use the [Moodle CLI](https://github.com/TGM-HIT/moodle-cli?tab=readme-ov-file#example-usage) tool to conveniently use this web service. See the repo's documentation for details.
+
+## Endpoint functions
 
 All endpoints live in the `local_modcontentservice` namespace and are named `update_..._content`, where `...` is one of the supported module names (`assign`, `folder`, `page`, `resource`). The exact parameters are as follows:
 
