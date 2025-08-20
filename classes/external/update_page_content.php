@@ -81,6 +81,7 @@ class update_page_content extends external_api {
         $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
         $op->save_files($page['itemid'], 'content', 0, page_get_editor_options($op->get_context()));
         $op->update_record();
+        $op->rebuild_course_cache();
 
         return "ok";
     }

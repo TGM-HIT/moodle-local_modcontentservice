@@ -83,6 +83,7 @@ class update_resource_content extends external_api {
         $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
         resource_set_mainfile($mainfile);
         $op->update_record();
+        $op->rebuild_course_cache();
 
         return "ok";
     }

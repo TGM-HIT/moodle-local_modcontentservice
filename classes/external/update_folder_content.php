@@ -77,6 +77,7 @@ class update_folder_content extends external_api {
         $op->save_files($intro['itemid'], 'intro', 0, ['subdirs' => true]);
         $op->save_files($files, 'content', 0, ['subdirs' => true]);
         $op->update_record();
+        $op->rebuild_course_cache();
 
         return "ok";
     }

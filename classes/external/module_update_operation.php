@@ -74,4 +74,9 @@ class module_update_operation {
 
         $DB->update_record($this->module_name, $this->data);
     }
+
+    public function rebuild_course_cache() {
+        \course_modinfo::purge_course_module_cache($this->cm->course, $this->cmid);
+        rebuild_course_cache($this->cm->course, true, true);
+    }
 }
