@@ -26,6 +26,24 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    'local_modcontentservice_update_assign_content' => [
+        'classname' => '\local_modcontentservice\external\update_assign_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the description, instructions and attachments of a specified assignment',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
+    'local_modcontentservice_update_folder_content' => [
+        'classname' => '\local_modcontentservice\external\update_folder_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the intro and files of a specified folder',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
     'local_modcontentservice_update_page_content' => [
         'classname' => '\local_modcontentservice\external\update_page_content',
         'methodname' => 'execute',
@@ -44,33 +62,15 @@ $functions = [
         'loginrequired' => true,
         'readonlysession' => false,
     ],
-    'local_modcontentservice_update_folder_content' => [
-        'classname' => '\local_modcontentservice\external\update_folder_content',
-        'methodname' => 'execute',
-        'description' => 'Replaces the intro and files of a specified folder',
-        'type' => 'write',
-        'ajax' => true,
-        'loginrequired' => true,
-        'readonlysession' => false,
-    ],
-    'local_modcontentservice_update_assign_content' => [
-        'classname' => '\local_modcontentservice\external\update_assign_content',
-        'methodname' => 'execute',
-        'description' => 'Replaces the description, instructions and attachments of a specified assignment',
-        'type' => 'write',
-        'ajax' => true,
-        'loginrequired' => true,
-        'readonlysession' => false,
-    ],
 ];
 
 $services = [
     'Mod Content Service' => [
         'functions' => [
+            'local_modcontentservice_update_assign_content',
+            'local_modcontentservice_update_folder_content',
             'local_modcontentservice_update_page_content',
             'local_modcontentservice_update_resource_content',
-            'local_modcontentservice_update_folder_content',
-            'local_modcontentservice_update_assign_content',
             'core_course_get_contents',
             'core_course_get_course_module',
             'core_course_search_courses',
