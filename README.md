@@ -4,12 +4,13 @@ This plugin provides an [External Service](https://moodledev.io/docs/5.0/apis/su
 
 - [`mod_assign`](https://docs.moodle.org/500/en/Assignment_activity): Description, Activity instructions, Additional files
 - [`mod_folder`](https://docs.moodle.org/500/en/Folder_resource): Description, Files
+- [`mod_label`](https://docs.moodle.org/500/en/Text_and_media_area): Text
 - [`mod_page`](https://docs.moodle.org/500/en/Page_resource): Description, Page content
 - [`mod_resource`](https://docs.moodle.org/500/en/File_resource): Description, Files
 
-In addition, updating a module through this plugin updates the revision number (except for `mod_assign`, which doesn't use revision numbers) and modification timestamp.
+In addition, updating a module through this plugin updates the revision number (except for `mod_assign` and `mod_label`, which don't use revision numbers) and modification timestamp.
 
-The rich text fields (description, activity instructions, page content) support attached files (usually images). Naturally, the file fields do too. When referencing an uploaded file in rich text, the path must be referred to as `@@PLUGINFILE@@/<filename>`. Here, `@@PLUGINFILE@@` is a prefix that Moodle normally inserts when post-processing form input.
+The rich text fields (text/description, activity instructions, page content) support attached files (usually images). Naturally, the file fields do too. When referencing an uploaded file in rich text, the path must be referred to as `@@PLUGINFILE@@/<filename>`. Here, `@@PLUGINFILE@@` is a prefix that Moodle normally inserts when post-processing form input.
 
 ## Example usage
 
@@ -103,7 +104,7 @@ You can use the [Moodle CLI](https://github.com/TGM-HIT/moodle-cli?tab=readme-ov
 
 ## Endpoint functions
 
-All endpoints live in the `local_modcontentservice` namespace and are named `update_..._content`, where `...` is one of the supported module names (`assign`, `folder`, `page`, `resource`). The exact parameters are as follows:
+All endpoints live in the `local_modcontentservice` namespace and are named `update_..._content`, where `...` is one of the supported module names (`assign`, `folder`, `label`, `page`, `resource`). The exact parameters are as follows:
 
 - `update_assign_content`:
   - `cmid`: the module ID; `int`, required
@@ -115,6 +116,10 @@ All endpoints live in the `local_modcontentservice` namespace and are named `upd
   - `cmid`: the module ID; `int`, required
   - `intro`: the description; rich text, required
   - `files`: the folder file item ID; `int`, required
+
+- `update_label_content`:
+  - `cmid`: the module ID; `int`, required
+  - `intro`: the text content; rich text, required
 
 - `update_page_content`:
   - `cmid`: the module ID; `int`, required

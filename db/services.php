@@ -44,6 +44,15 @@ $functions = [
         'loginrequired' => true,
         'readonlysession' => false,
     ],
+    'local_modcontentservice_update_label_content' => [
+        'classname' => '\local_modcontentservice\external\update_label_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the content of a specified label',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
     'local_modcontentservice_update_page_content' => [
         'classname' => '\local_modcontentservice\external\update_page_content',
         'methodname' => 'execute',
@@ -69,6 +78,7 @@ $services = [
         'functions' => [
             'local_modcontentservice_update_assign_content',
             'local_modcontentservice_update_folder_content',
+            'local_modcontentservice_update_label_content',
             'local_modcontentservice_update_page_content',
             'local_modcontentservice_update_resource_content',
             'core_course_get_contents',
