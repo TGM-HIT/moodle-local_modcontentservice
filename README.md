@@ -7,10 +7,11 @@ This plugin provides an [External Service](https://moodledev.io/docs/5.0/apis/su
 - [`mod_label`](https://docs.moodle.org/500/en/Text_and_media_area): Text
 - [`mod_page`](https://docs.moodle.org/500/en/Page_resource): Description, Page content
 - [`mod_resource`](https://docs.moodle.org/500/en/File_resource): Description, Files
+- course sections: Summary (sections are not modules but directly part of a course, but they are supported as well)
 
-In addition, updating a module through this plugin updates the revision number (except for `mod_assign` and `mod_label`, which don't use revision numbers) and modification timestamp.
+In addition, updating a module through this plugin updates the revision number (except for `mod_assign`, `mod_label` and course sections, which don't use revision numbers) and modification timestamp.
 
-The rich text fields (text/description, activity instructions, page content) support attached files (usually images). Naturally, the file fields do too. When referencing an uploaded file in rich text, the path must be referred to as `@@PLUGINFILE@@/<filename>`. Here, `@@PLUGINFILE@@` is a prefix that Moodle normally inserts when post-processing form input.
+The rich text fields (text/description, activity instructions, page content, section summary) support attached files (usually images). Naturally, the file fields do too. When referencing an uploaded file in rich text, the path must be referred to as `@@PLUGINFILE@@/<filename>`. Here, `@@PLUGINFILE@@` is a prefix that Moodle normally inserts when post-processing form input.
 
 ## Example usage
 
@@ -107,8 +108,12 @@ You can use the [Moodle CLI](https://github.com/TGM-HIT/moodle-cli?tab=readme-ov
 All endpoints live in the `local_modcontentservice` namespace and are named `update_..._content`, where `...` is one of the supported module names (`assign`, `folder`, `label`, `page`, `resource`). The exact parameters are as follows:
 
 - `update_assign_content`:
+  - `section`: the section ID; `int`, required
+  - `summary`: the summary; rich text (see below), required
+
+- `update_section_content`:
   - `cmid`: the module ID; `int`, required
-  - `intro`: the description; rich text (see below), required
+  - `intro`: the description; rich text, required
   - `activity`: the activity instructions; rich text, required
   - `attachments`: the attachment file item ID; `int`, optional (default: no files)
 
