@@ -26,6 +26,15 @@
 defined('MOODLE_INTERNAL') || die();
 
 $functions = [
+    'local_modcontentservice_update_section_content' => [
+        'classname' => '\local_modcontentservice\external\update_section_content',
+        'methodname' => 'execute',
+        'description' => 'Replaces the summary of a specified section',
+        'type' => 'write',
+        'ajax' => true,
+        'loginrequired' => true,
+        'readonlysession' => false,
+    ],
     'local_modcontentservice_update_assign_content' => [
         'classname' => '\local_modcontentservice\external\update_assign_content',
         'methodname' => 'execute',
@@ -76,6 +85,7 @@ $functions = [
 $services = [
     'Mod Content Service' => [
         'functions' => [
+            'local_modcontentservice_update_section_content',
             'local_modcontentservice_update_assign_content',
             'local_modcontentservice_update_folder_content',
             'local_modcontentservice_update_label_content',
