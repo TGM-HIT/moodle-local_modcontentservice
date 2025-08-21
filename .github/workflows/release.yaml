@@ -1,0 +1,62 @@
+# Based on ripgrep's release action:
+# https://github.com/BurntSushi/ripgrep/blob/master/.github/workflows/release.yml
+
+name: Build & Release
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build-release:
+    name: build & release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Determine version
+      run: |
+        VERSION=$(grep -oP '\$plugin->version = \K\d+(?=\;)' version.php)
+        RELEASE=$(grep -oP "\\\$plugin->release = '\K[^']+(?=';)" version.php)
+        echo "PLUGIN_VERSION=${VERSION}" >> "${GITHUB_ENV}"
+        echo "PLUGIN_RELEASE=${RELEASE}" >> "${GITHUB_ENV}"
+
+    - name: Check version
+      if: github.event_name == 'release' || github.event_name == 'push'
+      run: |
+        if [[ "${GITHUB_REF_NAME}" != "v${PLUGIN_RELEASE}" ]]; then
+          echo "package release ${RELEASE} does not match release tag ${GITHUB_REF_NAME}" >&2
+          exit 1
+        fi
+
+    - name: prepare release archive
+      run: |
+        cp -r . ../modcontentservice
+        mv ../modcontentservice ./modcontentservice
+        rm -r ./modcontentservice/.git*
+
+        zip -r "local_modcontentservice_${PLUGIN_VERSION}.zip" modcontentservice
+
+        mkdir artifact
+        mv ./modcontentservice artifact
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      if: github.event_name == 'workflow_dispatch'
+      with:
+        name: local_modcontentservice_${{ env.PLUGIN_VERSION }}
+        path: artifact
+        retention-days: 3
+
+    - name: Add artifacts to release
+      uses: ncipollo/release-action@v1
+      if: github.event_name == 'release' || github.event_name == 'push'
+      with:
+        artifacts: local_modcontentservice_${{ env.PLUGIN_VERSION }}.zip
+        allowUpdates: true
+        omitNameDuringUpdate: true
+        omitBodyDuringUpdate: true
