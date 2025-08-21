@@ -41,8 +41,6 @@ class update_section_content extends external_api {
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
-        global $META;
-
         return new external_function_parameters([
             'section' => new external_value(PARAM_INT, 'ID of the section to update'),
             'summary' => self::editor_structure('summary'),

@@ -41,8 +41,6 @@ class update_label_content extends external_api {
      * @return external_function_parameters
      */
     public static function execute_parameters(): external_function_parameters {
-        global $META;
-
         return new external_function_parameters([
             'cmid' => new external_value(PARAM_INT, 'course module ID of the label to update'),
             'intro' => self::editor_structure('intro'),
